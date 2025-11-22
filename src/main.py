@@ -8,7 +8,7 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 from .firebase import FirebaseClient
 from .prompts import PromptCreator
 from .tools import ddgs_run, content_scraper, links_scraper
-from .utils import ResponseParser, denest_dict, callbacks, logger
+from .utils import ResponseParser, denest_dict
 
 load_dotenv()
 
@@ -35,7 +35,7 @@ for section in ["overview", "eligibility", "dates", "locations", "costs", "conta
     _denested_dict = denest_dict(new_document[section])
 
     if not any((_denested_dict[key] == "not provided") for key in _denested_dict):
-        logger.info(f"Skipped {section}")
+        pp(f"Skipped {section}")
         continue
 
     prompt = PromptCreator().create_chat_prompt_template(section)
@@ -48,7 +48,7 @@ for section in ["overview", "eligibility", "dates", "locations", "costs", "conta
 
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     query = new_document
-    raw_response = agent_executor.invoke({"query": query}, config={"callbacks": callbacks})
+    raw_response = agent_executor.invoke({"query": query})
 
     try:
         new_document[section] = ResponseParser().parse_raw_response(raw_response, section)
